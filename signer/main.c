@@ -68,7 +68,7 @@ int main(void)
 	crypto_ed25519_public_key(pubkey, (const uint8_t *)local_cdi);
 
 	for (;;) {
-		*led = LED_BLUE;
+		//*led = LED_BLUE;
 		in = readbyte();
 		qemu_puts("Read byte: ");
 		qemu_puthex(in);
@@ -162,12 +162,38 @@ int main(void)
 #ifndef TKEY_SIGNER_APP_NO_TOUCH
 				wait_touch_ledflash(LED_GREEN, 350000);
 #endif
+				uint8_t loc_message[MAX_SIGN_SIZE];
+				memcpy(loc_message, message, message_size);
+
+				qemu_puts("message_size before signing: ");
+				qemu_putinthex(message_size);
+				qemu_lf();
+
+				qemu_puts("signing...\n");
 				// All loaded, device touched, let's
 				// sign the message
 				crypto_ed25519_sign(signature,
 						    (void *)local_cdi, pubkey,
 						    message, message_size);
 				signature_done = 1;
+
+				qemu_puts("sig: \n");
+				qemu_hexdump(signature, 64);
+
+				qemu_puts("pubkey: \n");
+				qemu_hexdump(pubkey, 32);
+
+				qemu_puts("verifying signature...");
+
+				// Verify the signature
+				if (crypto_ed25519_check(signature, pubkey, message, message_size) == 0) {
+					qemu_puts("verified sig\n");
+					*led = LED_GREEN;
+				} else {
+					qemu_puts("sig couldn't be verified\n");
+					*led = LED_RED;
+				}
+
 				message_size = 0;
 			}
 
