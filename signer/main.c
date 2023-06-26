@@ -63,6 +63,7 @@ int main(void)
 	int nbytes = 0; // Bytes to write to memory
 	uint8_t in;
 	uint32_t local_cdi[8];
+	uint8_t secret_key[64];
 
 	// Use Execution Monitor on RAM after app
 	*cpu_mon_first = *app_addr + *app_size;
@@ -75,7 +76,7 @@ int main(void)
 
 	// Generate a public key from CDI (only word aligned access to CDI)
 	wordcpy(local_cdi, (void *)cdi, 8);
-	crypto_ed25519_public_key(pubkey, (const uint8_t *)local_cdi);
+	crypto_ed25519_key_pair(secret_key, pubkey, (uint8_t *)local_cdi);
 
 	for (;;) {
 		*led = LED_BLUE;
@@ -174,8 +175,7 @@ int main(void)
 #endif
 				// All loaded, device touched, let's
 				// sign the message
-				crypto_ed25519_sign(signature,
-						    (void *)local_cdi, pubkey,
+				crypto_ed25519_sign(signature, secret_key,
 						    message, message_size);
 				signature_done = 1;
 				message_size = 0;
