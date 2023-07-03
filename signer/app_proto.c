@@ -42,6 +42,11 @@ void appreply(struct frame_header hdr, enum appcmd rspcode, void *buf)
 		nbytes = 32;
 		break;
 
+	case APP_RSP_SIGN_PH_DATA:
+		len = LEN_4;
+		nbytes = 4;
+		break;
+
 	case APP_RSP_UNKNOWN_CMD:
 		len = LEN_1;
 		nbytes = 1;

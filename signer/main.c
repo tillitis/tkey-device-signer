@@ -49,7 +49,9 @@ touched:
 
 int main(void)
 {
+#ifndef NODEBUG
 	uint32_t stack;
+#endif
 	uint8_t pubkey[32];
 	struct frame_header hdr; // Used in both directions
 	uint8_t cmd[CMDLEN_MAXBYTES];
@@ -70,9 +72,11 @@ int main(void)
 	*cpu_mon_last = TK1_RAM_BASE + TK1_RAM_SIZE;
 	*cpu_mon_ctrl = 1;
 
+#ifndef NODEBUG
 	qemu_puts("Hello! &stack is on: ");
 	qemu_putinthex((uint32_t)&stack);
 	qemu_lf();
+#endif
 
 	// Generate a public key from CDI (only word aligned access to CDI)
 	wordcpy(local_cdi, (void *)cdi, 8);
@@ -183,6 +187,28 @@ int main(void)
 
 			rsp[0] = STATUS_OK;
 			appreply(hdr, APP_RSP_SIGN_DATA, rsp);
+			break;
+
+		case APP_CMD_SIGN_PH_DATA:
+			qemu_puts("APP_CMD_SIGN_PH_DATA\n");
+			// Bad length of this command
+			if (hdr.len != 128) {
+				rsp[0] = STATUS_BAD;
+				appreply(hdr, APP_RSP_SIGN_PH_DATA, rsp);
+				break;
+			}
+
+			memcpy(&message, cmd + 1, 64);
+
+#ifndef TKEY_SIGNER_APP_NO_TOUCH
+			wait_touch_ledflash(LED_GREEN, 350000);
+#endif
+			// sign the pre-hashed message
+			crypto_ed25519_ph_sign(signature, secret_key, message);
+			signature_done = 1;
+
+			rsp[0] = STATUS_OK;
+			appreply(hdr, APP_RSP_SIGN_PH_DATA, rsp);
 			break;
 
 		case APP_CMD_GET_SIG:

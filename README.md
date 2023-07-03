@@ -28,6 +28,7 @@ following requests:
 | `CMD_SIGN_DATA`       | 128 B       | 0x05   | 127 B null-padded data to be signed | `RSP_SIGN_DATA`       |
 | `CMD_GET_SIG`         | 1 B         | 0x07   | none                                | `RSP_GET_SIG`         |
 | `CMD_GET_NAMEVERSION` | 1 B         | 0x09   | none                                | `RSP_GET_NAMEVERSION` |
+| `CMD_SIGN_PH_DATA`    | 128 B       | 0x0b   | 64 B pre-hashed message to be signed| `RSP_SIGN_PH_DATA`       |
 
 | *response*            | *FP length* | *code* | *data*                             |
 |-----------------------|-------------|--------|------------------------------------|
@@ -36,6 +37,7 @@ following requests:
 | `RSP_SIGN_DATA`       | 4 B         | 0x06   | 1 byte status                      |
 | `RSP_GET_SIG`         | 128 B       | 0x08   | 64 byte signature                  |
 | `RSP_GET_NAMEVERSION` | 32 B        | 0x0a   | 2 * 4 byte name, version 32 bit LE |
+| `RSP_SIGN_PH_DATA`    | 4 B         | 0x0c   | 1 byte status                      |
 | `RSP_UNKNOWN_CMD`     | 1 B         | 0xff   | none                               |
 
 | *status replies* | *code* |
@@ -64,9 +66,11 @@ Typical use by a client application:
 4. Send `CMD_GET_PUBKEY` to receive the `signer`'s public key. If the
    public key is already stored, check against it so it's the expected
    key.
-5. Send `CMD_SET_SIZE` to set the size of the message to sign.
-6. Send repeated messages with `CMD_SIGN_DATA` to send the entire
-   message.
+5. Send `CMD_SET_SIZE` to set the size of the message to sign. Can be
+   omitted if signing using a pre-hashed message of 64 bytes.
+6. Either send repeated messages with `CMD_SIGN_DATA` to send the
+   entire message, or send the pre-hashed 64 bytes message with
+   `CMD_SIGN_PH_DATA`.
 7. Send `CMD_GET_SIG` to get the signature over the message.
 
 **Please note**: The firmware detection mechanism is not by any means
