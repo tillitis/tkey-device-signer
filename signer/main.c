@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <monocypher/monocypher-ed25519.h>
-#include <qemu_debug.h>
-#include <tk1_mem.h>
+#include <tkey/qemu_debug.h>
+#include <tkey/tk1_mem.h>
 
 #include "app_proto.h"
 
@@ -50,7 +50,7 @@ touched:
 
 int main(void)
 {
-#ifndef NODEBUG
+#ifdef QEMU_DEBUG
 	uint32_t stack;
 #endif
 	uint8_t pubkey[32];
@@ -73,7 +73,7 @@ int main(void)
 	*cpu_mon_last = TK1_RAM_BASE + TK1_RAM_SIZE;
 	*cpu_mon_ctrl = 1;
 
-#ifndef NODEBUG
+#ifdef QEMU_DEBUG
 	qemu_puts("Hello! &stack is on: ");
 	qemu_putinthex((uint32_t)&stack);
 	qemu_lf();

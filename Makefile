@@ -8,13 +8,13 @@ CC = clang
 INCLUDE=$(LIBDIR)/include
 
 # If you want libcommon's qemu_puts() et cetera to output something on our QEMU
-# debug port, remove -DNODEBUG below
+# debug port, use -DQEMU_DEBUG below
 CFLAGS = -target riscv32-unknown-none-elf -march=rv32iczmmul -mabi=ilp32 -mcmodel=medany \
    -static -std=gnu99 -O2 -ffast-math -fno-common -fno-builtin-printf \
    -fno-builtin-putchar -nostdlib -mno-relax -flto -g \
    -Wall -Werror=implicit-function-declaration \
-   -I $(INCLUDE) -I $(LIBDIR)  \
-   -DNODEBUG
+   -I $(INCLUDE) -I $(LIBDIR) #-DQEMU_DEBUG
+
 ifneq ($(TKEY_SIGNER_APP_NO_TOUCH),)
 CFLAGS := $(CFLAGS) -DTKEY_SIGNER_APP_NO_TOUCH
 endif
@@ -22,9 +22,7 @@ endif
 AS = clang
 ASFLAGS = -target riscv32-unknown-none-elf -march=rv32iczmmul -mabi=ilp32 -mcmodel=medany -mno-relax
 
-LDFLAGS=-T $(LIBDIR)/app.lds -L $(LIBDIR)/libcommon/ -lcommon -L $(LIBDIR)/libcrt0/ -lcrt0
-
-RM=/bin/rm
+LDFLAGS=-T $(LIBDIR)/app.lds -L $(LIBDIR) -lcommon -lcrt0
 
 
 .PHONY: all
@@ -45,11 +43,11 @@ check-signer-hash: signer/app.bin
 SIGNEROBJS=signer/main.o signer/app_proto.o
 signer/app.elf: $(SIGNEROBJS)
 	$(CC) $(CFLAGS) $(SIGNEROBJS) $(LDFLAGS) -L $(LIBDIR)/monocypher -lmonocypher -I $(LIBDIR) -o $@
-$(SIGNEROBJS): $(INCLUDE)/tk1_mem.h signer/app_proto.h
+$(SIGNEROBJS): $(INCLUDE)/tkey/tk1_mem.h signer/app_proto.h
 
 .PHONY: clean
 clean:
-	$(RM) -f signer/app.bin signer/app.elf $(SIGNEROBJS)
+	rm -f signer/app.bin signer/app.elf $(SIGNEROBJS)
 
 # Uses ../.clang-format
 FMTFILES=signer/*.[ch]
