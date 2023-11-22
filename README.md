@@ -121,33 +121,18 @@ https://spdx.org/licenses/
 You have two options for build tools: either you use our OCI image
 `ghcr.io/tillitis/tkey-builder` or native tools.
 
-In either case you need the device libraries in a directory next to
-this one. The device libraries are available in:
+An easy way to build is to use the provided scripts:
 
-https://github.com/tillitis/tkey-libs
+- `build.sh` for native tools.
+- `build-podman.sh` for use with Podman.
 
-Clone and build the device libraries first. You will most likely want
-to specify a release with something like `-b v0.0.1`:
+These scripts automatilly clone the [tkey-libs device
+libraries](https://github.com/tillitis/tkey-libs) in a directory next
+to this one.
 
-```
-$ git clone -b v0.0.1 --depth 1 https://github.com/tillitis/tkey-libs
-$ cd tkey-libs
-$ make
-```
+### Installing Podman
 
-### Building with Podman
-
-We provide an OCI image with all tools you can use to build the
-tkey-libs and the apps. If you have `make` and Podman installed you
-can use it like this in the `tkey-libs` directory and then this
-directory:
-
-```
-make podman
-```
-
-and everything should be built. This assumes a working rootless
-podman. On Ubuntu 22.10, running
+On Ubuntu 22.10, running
 
 ```
 apt install podman rootlesskit slirp4netns
