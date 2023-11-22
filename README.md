@@ -179,24 +179,15 @@ derived private key and identity will change.
 
 ## Running
 
-Please see the [Developer
-Handbook](https://dev.tillitis.se/tools/#qemu) for [how to run with
-QEMU](https://dev.tillitis.se/tools/#qemu) or [how to run apps on a
-TKey](https://dev.tillitis.se/devapp/#running-tkey-apps) but generally
-to run `signer` you either use our
-[tkey-ssh-agent](https://github.com/tillitis/tillitis-key1-apps) or
-you use our development tool
-[tkey-runapp](https://github.com/tillitis/tillitis-key1-apps) or the
-script `runsign.sh` (also in the above repo) to run it manually.
+If you just want to sign a file or experiment with the signer, use the
+[tkey-sign](https://github.com/tillitis/tkey-sign-cli) command which
+you can also use as an example on how to load and run the signer
+device app.
 
-```
-$ ./runsign.sh file-with-message
-```
+[tkey-ssh-agent](https://github.com/tillitis/tillitis-key1-apps) also
+uses this signer app.
 
-```
-$ ./tkey-runapp apps/signer/app.bin
-$ ./tkey-sign file-with-message
-```
-
-Use `--port` if the device port is not automatically detected.
-
+Please see the [Developer Handbook](https://dev.tillitis.se/) for [how
+to run with QEMU](https://dev.tillitis.se/tools/#qemu-emulator) or
+[how to run apps on a
+TKey](https://dev.tillitis.se/devapp/#running-tkey-apps).
