@@ -1,3 +1,11 @@
+# Check for OS, if not macos assume linux
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	shasum = shasum -a 512
+else
+	shasum = sha512sum
+endif
+
 OBJCOPY ?= llvm-objcopy
 
 P := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -37,7 +45,7 @@ show-%-hash: %/app.bin
 	cd $$(dirname $^) && sha512sum app.bin
 
 check-signer-hash: signer/app.bin
-	cd signer && sha512sum -c app.bin.sha512
+	cd signer && $(shasum) -c app.bin.sha512
 
 # Simple ed25519 signer app
 SIGNEROBJS=signer/main.o signer/app_proto.o
@@ -62,4 +70,4 @@ checkfmt:
 
 .PHONY: podman
 podman:
-	podman run --rm --mount type=bind,source=$(CURDIR),target=/src --mount type=bind,source=$(LIBDIR),target=/tkey-libs -w /src -it ghcr.io/tillitis/tkey-builder:2 make -j
+	podman run --arch=amd64 --rm --mount type=bind,source=$(CURDIR),target=/src --mount type=bind,source=$(LIBDIR),target=/tkey-libs -w /src -it ghcr.io/tillitis/tkey-builder:2 make -j
