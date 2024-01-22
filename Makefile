@@ -47,6 +47,10 @@ show-%-hash: %/app.bin
 check-signer-hash: signer/app.bin
 	cd signer && $(shasum) -c app.bin.sha512
 
+.PHONY: check
+check:
+	clang-tidy -header-filter=.* -checks=cert-* signer/*.[ch] -- $(CFLAGS)
+
 # Simple ed25519 signer app
 SIGNEROBJS=signer/main.o signer/app_proto.o
 signer/app.elf: $(SIGNEROBJS)
