@@ -65,7 +65,6 @@ int main(void)
 	int left = 0;	// Bytes left to read
 	int nbytes = 0; // Bytes to write to memory
 	uint8_t in;
-	uint32_t local_cdi[8];
 	uint8_t secret_key[64];
 
 	// Use Execution Monitor on RAM after app
@@ -79,9 +78,8 @@ int main(void)
 	qemu_lf();
 #endif
 
-	// Generate a public key from CDI (only word aligned access to CDI)
-	wordcpy(local_cdi, (void *)cdi, 8);
-	crypto_ed25519_key_pair(secret_key, pubkey, (uint8_t *)local_cdi);
+	// Generate a public key from CDI
+	crypto_ed25519_key_pair(secret_key, pubkey, (uint8_t *)cdi);
 
 	for (;;) {
 		*led = LED_BLUE;
