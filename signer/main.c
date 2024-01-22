@@ -50,9 +50,6 @@ touched:
 
 int main(void)
 {
-#ifdef QEMU_DEBUG
-	uint32_t stack;
-#endif
 	uint8_t pubkey[32];
 	struct frame_header hdr; // Used in both directions
 	uint8_t cmd[CMDLEN_MAXBYTES];
@@ -71,12 +68,6 @@ int main(void)
 	*cpu_mon_first = *app_addr + *app_size;
 	*cpu_mon_last = TK1_RAM_BASE + TK1_RAM_SIZE;
 	*cpu_mon_ctrl = 1;
-
-#ifdef QEMU_DEBUG
-	qemu_puts("Hello! &stack is on: ");
-	qemu_putinthex((uint32_t)&stack);
-	qemu_lf();
-#endif
 
 	// Generate a public key from CDI
 	crypto_ed25519_key_pair(secret_key, pubkey, (uint8_t *)cdi);
