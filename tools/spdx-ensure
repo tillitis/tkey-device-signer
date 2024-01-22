@@ -22,6 +22,7 @@ LICENSE
 Makefile
 README.md
 RELEASE.md
+docs/implementation-notes.md
 signer/app.bin.sha512
 )
 

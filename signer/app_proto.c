@@ -15,43 +15,38 @@ void appreply_nok(struct frame_header hdr)
 // Send app reply with frame header, response code, and LEN_X-1 bytes from buf
 void appreply(struct frame_header hdr, enum appcmd rspcode, void *buf)
 {
-	size_t nbytes;
-	enum cmdlen len;
+	size_t nbytes = 0;
+	enum cmdlen len = LEN_1;
 
 	switch (rspcode) {
-	case APP_RSP_GET_PUBKEY:
+	case RSP_GET_PUBKEY:
 		len = LEN_128;
 		nbytes = 128;
 		break;
 
-	case APP_RSP_SET_SIZE:
+	case RSP_SET_SIZE:
 		len = LEN_4;
 		nbytes = 4;
 		break;
 
-	case APP_RSP_SIGN_DATA:
+	case RSP_LOAD_DATA:
 		len = LEN_4;
 		nbytes = 4;
 		break;
 
-	case APP_RSP_GET_SIG:
+	case RSP_GET_SIG:
 		len = LEN_128;
 		nbytes = 128;
 		break;
 
-	case APP_RSP_GET_NAMEVERSION:
+	case RSP_GET_NAMEVERSION:
 		len = LEN_32;
 		nbytes = 32;
 		break;
 
-	case APP_RSP_SIGN_PH_DATA:
+	case RSP_LOAD_PH_DATA:
 		len = LEN_4;
 		nbytes = 4;
-		break;
-
-	case APP_RSP_UNKNOWN_CMD:
-		len = LEN_1;
-		nbytes = 1;
 		break;
 
 	default:

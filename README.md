@@ -3,9 +3,11 @@
 # Tillitis TKey Signer
 
 The TKey `signer` device application is an ed25519 signing tool. It
-can sign messages up to 4 kByte. It is used by the
-[tkey-ssh-agent](https://github.com/tillitis/tillitis-key1-apps) for
-SSH authentication.
+can sign messages up to 4 kByte. It is, for instance, used by the
+[tkey-ssh-agent](https://github.com/tillitis/tkey-ssh-agent) for SSH
+authentication and by
+[tkey-sign](https://github.com/tillitis/tkey-sign-cli) for doing
+digital signatures of files.
 
 See [Release notes](RELEASE.md).
 
@@ -17,28 +19,31 @@ We provide a Go package to use with `signer`:
 
 ## Signer application protocol
 
-`signer` has a simple protocol on top of the [TKey Framing
-Protocol](https://dev.tillitis.se/protocol/#framing-protocol) with the
-following requests:
+`signer` has a simple application protocol on top of the [TKey Framing
+Protocol](https://dev.tillitis.se/protocol/#framing-protocol).
 
-| *command*             | *FP length* | *code* | *data*                              | *response*            |
-|-----------------------|-------------|--------|-------------------------------------|-----------------------|
-| `CMD_GET_PUBKEY`      | 1 B         | 0x01   | none                                | `RSP_GET_PUBKEY`      |
-| `CMD_SET_SIZE`        | 32 B        | 0x03   | size as 32 bit LE                   | `RSP_SET_SIZE`        |
-| `CMD_SIGN_DATA`       | 128 B       | 0x05   | 127 B null-padded data to be signed | `RSP_SIGN_DATA`       |
-| `CMD_GET_SIG`         | 1 B         | 0x07   | none                                | `RSP_GET_SIG`         |
-| `CMD_GET_NAMEVERSION` | 1 B         | 0x09   | none                                | `RSP_GET_NAMEVERSION` |
-| `CMD_SIGN_PH_DATA`    | 128 B       | 0x0b   | 64 B pre-hashed message to be signed| `RSP_SIGN_PH_DATA`       |
+The protocol state machine handling this protocol is documented in
+[the implementation notes](docs/implementation-notes.md).
+
+The protocol has the following requests and responses:
+
+| *command*             | *Function*                              | *FP length* | *code* | *data*            | *response*            |
+|-----------------------|-----------------------------------------|-------------|--------|-------------------|-----------------------|
+| `CMD_GET_PUBKEY`      | Get the public key                      | 1 B         | 0x01   | none              | `RSP_GET_PUBKEY`      |
+| `CMD_SET_SIZE`        | Set size of message to be signed        | 32 B        | 0x03   | size as 32 bit LE | `RSP_SET_SIZE`        |
+| `CMD_LOAD_DATA`       | Load a chunk of message                 | 128 B       | 0x05   | 127 B null-padded | `RSP_LOAD_DATA`       |
+| `CMD_GET_SIG`         | Sign and get signature                  | 1 B         | 0x07   | none              | `RSP_GET_SIG`         |
+| `CMD_GET_NAMEVERSION` | Identify version of app                 | 1 B         | 0x09   | none              | `RSP_GET_NAMEVERSION` |
+| `CMD_LOAD_PH_DATA`    | Load a pre-hashed message of fixed size | 128 B       | 0x0b   | 64 B              | `RSP_LOAD_PH_DATA`    |
 
 | *response*            | *FP length* | *code* | *data*                             |
 |-----------------------|-------------|--------|------------------------------------|
 | `RSP_GET_PUBKEY`      | 128 B       | 0x02   | 32 byte ed25519 public key         |
 | `RSP_SET_SIZE`        | 4 B         | 0x04   | 1 byte status                      |
-| `RSP_SIGN_DATA`       | 4 B         | 0x06   | 1 byte status                      |
+| `RSP_LOAD_DATA`       | 4 B         | 0x06   | 1 byte status                      |
 | `RSP_GET_SIG`         | 128 B       | 0x08   | 64 byte signature                  |
 | `RSP_GET_NAMEVERSION` | 32 B        | 0x0a   | 2 * 4 byte name, version 32 bit LE |
-| `RSP_SIGN_PH_DATA`    | 4 B         | 0x0c   | 1 byte status                      |
-| `RSP_UNKNOWN_CMD`     | 1 B         | 0xff   | none                               |
+| `RSP_LOAD_PH_DATA`    | 4 B         | 0x0c   | 1 byte status                      |
 
 | *status replies* | *code* |
 |------------------|--------|
@@ -68,9 +73,9 @@ Typical use by a client application:
    key.
 5. Send `CMD_SET_SIZE` to set the size of the message to sign. Can be
    omitted if signing using a pre-hashed message of 64 bytes.
-6. Either send repeated messages with `CMD_SIGN_DATA` to send the
+6. Either send repeated messages with `CMD_LOAD_DATA` to send the
    entire message, or send the pre-hashed 64 bytes message with
-   `CMD_SIGN_PH_DATA`.
+   `CMD_LOAD_PH_DATA`.
 7. Send `CMD_GET_SIG` to get the signature over the message.
 
 **Please note**: The firmware detection mechanism is not by any means
@@ -168,7 +173,7 @@ your system.
 The `signer` normally requires the TKey to be physically touched for
 signing to complete. For special purposes it can be compiled with this
 requirement removed by setting the environment variable
-`TKEY_SIGNER_APP_NO_TOUCH` to some value when building. Example: 
+`TKEY_SIGNER_APP_NO_TOUCH` to some value when building. Example:
 
 ```
 $ make TKEY_SIGNER_APP_NO_TOUCH=yesplease

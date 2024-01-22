@@ -9,20 +9,19 @@
 
 // clang-format off
 enum appcmd {
-	APP_CMD_GET_PUBKEY      = 0x01,
-	APP_RSP_GET_PUBKEY      = 0x02,
-	APP_CMD_SET_SIZE        = 0x03,
-	APP_RSP_SET_SIZE        = 0x04,
-	APP_CMD_SIGN_DATA       = 0x05,
-	APP_RSP_SIGN_DATA       = 0x06,
-	APP_CMD_GET_SIG         = 0x07,
-	APP_RSP_GET_SIG         = 0x08,
-	APP_CMD_GET_NAMEVERSION = 0x09,
-	APP_RSP_GET_NAMEVERSION = 0x0a,
-	APP_CMD_SIGN_PH_DATA    = 0x0b,
-	APP_RSP_SIGN_PH_DATA    = 0x0c,
-
-	APP_RSP_UNKNOWN_CMD     = 0xff,
+	CMD_GET_PUBKEY      = 0x01,
+	RSP_GET_PUBKEY      = 0x02,
+	CMD_SET_SIZE        = 0x03,
+	RSP_SET_SIZE        = 0x04,
+	CMD_LOAD_DATA       = 0x05,
+	RSP_LOAD_DATA       = 0x06,
+	CMD_GET_SIG         = 0x07,
+	RSP_GET_SIG         = 0x08,
+	CMD_GET_NAMEVERSION = 0x09,
+	RSP_GET_NAMEVERSION = 0x0a,
+	CMD_LOAD_PH_DATA    = 0x0b,
+	RSP_LOAD_PH_DATA    = 0x0c,
+	CMD_FW_PROBE	    = 0xff,
 };
 // clang-format on
 
