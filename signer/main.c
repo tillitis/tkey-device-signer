@@ -123,6 +123,9 @@ int main(void)
 			break;
 
 		case APP_CMD_SET_SIZE:
+		{
+			uint32_t input_size = 0;
+
 			qemu_puts("APP_CMD_SET_SIZE\n");
 			// Bad length
 			if (hdr.len != 32) {
@@ -132,15 +135,17 @@ int main(void)
 			}
 			signature_done = 0;
 			// cmd[1..4] contains the size.
-			message_size = cmd[1] + (cmd[2] << 8) + (cmd[3] << 16) +
+			input_size = cmd[1] + (cmd[2] << 8) + (cmd[3] << 16) +
 				       (cmd[4] << 24);
 
-			if (message_size > MAX_SIGN_SIZE) {
+			if (input_size > MAX_SIGN_SIZE) {
 				qemu_puts("Message too big!\n");
 				rsp[0] = STATUS_BAD;
 				appreply(hdr, APP_RSP_SET_SIZE, rsp);
 				break;
 			}
+
+			message_size = input_size;
 
 			// Reset where we load the data
 			left = message_size;
@@ -149,6 +154,7 @@ int main(void)
 			rsp[0] = STATUS_OK;
 			appreply(hdr, APP_RSP_SET_SIZE, rsp);
 			break;
+		}
 
 		case APP_CMD_SIGN_DATA:
 			qemu_puts("APP_CMD_SIGN_DATA\n");
