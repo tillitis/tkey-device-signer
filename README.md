@@ -2,7 +2,7 @@
 
 # Tillitis TKey Signer
 
-The TKey `signer` device application is an ed25519 signing oracle. It
+The TKey `signer` device application is an ed25519 signing tool. It
 can sign messages up to 4 kByte. It is used by the
 [tkey-ssh-agent](https://github.com/tillitis/tillitis-key1-apps) for
 SSH authentication.
