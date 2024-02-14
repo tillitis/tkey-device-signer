@@ -44,9 +44,9 @@ void appreply(struct frame_header hdr, enum appcmd rspcode, void *buf)
 		nbytes = 32;
 		break;
 
-	case RSP_LOAD_PH_DATA:
-		len = LEN_4;
-		nbytes = 4;
+	case RSP_GET_FIRMWARE_HASH:
+		len = LEN_128;
+		nbytes = 128;
 		break;
 
 	default:

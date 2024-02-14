@@ -27,23 +27,23 @@ The protocol state machine handling this protocol is documented in
 
 The protocol has the following requests and responses:
 
-| *command*             | *Function*                              | *FP length* | *code* | *data*            | *response*            |
-|-----------------------|-----------------------------------------|-------------|--------|-------------------|-----------------------|
-| `CMD_GET_PUBKEY`      | Get the public key                      | 1 B         | 0x01   | none              | `RSP_GET_PUBKEY`      |
-| `CMD_SET_SIZE`        | Set size of message to be signed        | 32 B        | 0x03   | size as 32 bit LE | `RSP_SET_SIZE`        |
-| `CMD_LOAD_DATA`       | Load a chunk of message                 | 128 B       | 0x05   | 127 B null-padded | `RSP_LOAD_DATA`       |
-| `CMD_GET_SIG`         | Sign and get signature                  | 1 B         | 0x07   | none              | `RSP_GET_SIG`         |
-| `CMD_GET_NAMEVERSION` | Identify version of app                 | 1 B         | 0x09   | none              | `RSP_GET_NAMEVERSION` |
-| `CMD_LOAD_PH_DATA`    | Load a pre-hashed message of fixed size | 128 B       | 0x0b   | 64 B              | `RSP_LOAD_PH_DATA`    |
+| *command*               | *Function*                       | *FP length* | *code* | *data*            | *response*              |
+|-------------------------|----------------------------------|-------------|--------|-------------------|-------------------------|
+| `CMD_GET_PUBKEY`        | Get the public key               | 1 B         | 0x01   | none              | `RSP_GET_PUBKEY`        |
+| `CMD_SET_SIZE`          | Set size of message to be signed | 32 B        | 0x03   | size as 32 bit LE | `RSP_SET_SIZE`          |
+| `CMD_LOAD_DATA`         | Load a chunk of message          | 128 B       | 0x05   | 127 B null-padded | `RSP_LOAD_DATA`         |
+| `CMD_GET_SIG`           | Sign and get signature           | 1 B         | 0x07   | none              | `RSP_GET_SIG`           |
+| `CMD_GET_NAMEVERSION`   | Identify version of app          | 1 B         | 0x09   | none              | `RSP_GET_NAMEVERSION`   |
+| `CMD_GET_FIRMWARE_HASH` | Ask for digest of firmware       | 32 B        | 0x0b   | size as 32 bit LE | `RSP_GET_FIRMWARE_HASH` |
 
-| *response*            | *FP length* | *code* | *data*                             |
-|-----------------------|-------------|--------|------------------------------------|
-| `RSP_GET_PUBKEY`      | 128 B       | 0x02   | 32 byte ed25519 public key         |
-| `RSP_SET_SIZE`        | 4 B         | 0x04   | 1 byte status                      |
-| `RSP_LOAD_DATA`       | 4 B         | 0x06   | 1 byte status                      |
-| `RSP_GET_SIG`         | 128 B       | 0x08   | 64 byte signature                  |
-| `RSP_GET_NAMEVERSION` | 32 B        | 0x0a   | 2 * 4 byte name, version 32 bit LE |
-| `RSP_LOAD_PH_DATA`    | 4 B         | 0x0c   | 1 byte status                      |
+| *response*              | *FP length* | *code* | *data*                             |
+|-------------------------|-------------|--------|------------------------------------|
+| `RSP_GET_PUBKEY`        | 128 B       | 0x02   | 32 byte ed25519 public key         |
+| `RSP_SET_SIZE`          | 4 B         | 0x04   | 1 byte status                      |
+| `RSP_LOAD_DATA`         | 4 B         | 0x06   | 1 byte status                      |
+| `RSP_GET_SIG`           | 128 B       | 0x08   | 64 byte signature                  |
+| `RSP_GET_NAMEVERSION`   | 32 B        | 0x0a   | 2 * 4 byte name, version 32 bit LE |
+| `RSP_GET_FIRMWARE_HASH` | 128 B       | 0x0c   | 1 byte status + 64 bytes digest    |
 
 | *status replies* | *code* |
 |------------------|--------|
@@ -71,11 +71,9 @@ Typical use by a client application:
 4. Send `CMD_GET_PUBKEY` to receive the `signer`'s public key. If the
    public key is already stored, check against it so it's the expected
    key.
-5. Send `CMD_SET_SIZE` to set the size of the message to sign. Can be
-   omitted if signing using a pre-hashed message of 64 bytes.
-6. Either send repeated messages with `CMD_LOAD_DATA` to send the
-   entire message, or send the pre-hashed 64 bytes message with
-   `CMD_LOAD_PH_DATA`.
+5. Send `CMD_SET_SIZE` to set the size of the message to sign.
+6. Send repeated messages with `CMD_LOAD_DATA` to send the
+   entire message.
 7. Send `CMD_GET_SIG` to get the signature over the message.
 
 **Please note**: The firmware detection mechanism is not by any means

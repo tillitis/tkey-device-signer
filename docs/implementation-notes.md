@@ -42,9 +42,8 @@ stateDiagram-v2
 
      [*] --> S1
 
-     S1 --> S1: GET_NAMEVERSION, GET_PUBKEY
+     S1 --> S1: GET_NAMEVERSION, GET_PUBKEY, GET_FIRMWARE_HASH
      S1 --> S2: SET_SIZE
-     S1 --> S3: LOAD_PH_DATA
      S1 --> SE: Error
 
      S2 --> S2: LOAD_DATA
@@ -59,16 +58,16 @@ stateDiagram-v2
 
 Commands allowed in state `started`:
 
-| *command*         | *next state* |
-|-------------------|--------------|
-| `GET_NAMEVERSION` | `started`    |
-| `GET_PUBKEY`      | `started`    |
-| `SET_SIZE`        | `loading`    |
-| `LOAD_PH_DATA`    | `signing`    |
+| *command*           | *next state* |
+|---------------------|--------------|
+| `GET_NAMEVERSION`   | `started`    |
+| `GET_PUBKEY`        | `started`    |
+| `GET_FIRMWARE_HASH` | `started`    |
+| `SET_SIZE`          | `loading`    |
 
 In `started` we're ready to start a transaction with a client program.
-It can gather some information and start sending a message by setting
-the size or directly sending a small 64 bytes pre-hashed message.
+It can gather some information or start sending a message to be signed
+by setting the message size.
 
 ### State: loading
 

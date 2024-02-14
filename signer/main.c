@@ -24,7 +24,6 @@ static volatile uint32_t *app_size      = (volatile uint32_t *) TK1_MMIO_TK1_APP
 // Touch timeout in seconds
 #define TOUCH_TIMEOUT 30
 #define MAX_SIGN_SIZE 4096
-#define PH_MSG_SIZE 64
 
 const uint8_t app_name0[4] = "tk1 ";
 const uint8_t app_name1[4] = "sign";
@@ -43,8 +42,7 @@ struct context {
 				// message in memory.
 	uint8_t pubkey[32];
 	uint8_t message[MAX_SIGN_SIZE];
-	uint8_t is_prehashed; // prehashed? 0 is vanilla, 1 is prehashed
-	uint32_t left;	      // Bytes left to receive
+	uint32_t left; // Bytes left to receive
 	uint32_t message_size;
 	uint16_t msg_idx; // Where we are currently loading a message
 };
@@ -67,7 +65,6 @@ static void wipe_context(struct context *ctx);
 static void wipe_context(struct context *ctx)
 {
 	crypto_wipe(ctx->message, MAX_SIGN_SIZE);
-	ctx->is_prehashed = 0;
 	ctx->left = 0;
 	ctx->message_size = 0;
 	ctx->msg_idx = 0;
@@ -77,9 +74,9 @@ static void wipe_context(struct context *ctx)
 //
 // - CMD_FW_PROBE
 // - CMD_GET_NAMEVERSION
+// - CMD_GET_FIRMWARE_HASH
 // - CMD_GET_PUBKEY
 // - CMD_SET_SIZE
-// - CMD_LOAD_PH_DATA:
 //
 // Anything else sent leads to state 'failed'.
 //
@@ -119,6 +116,38 @@ static enum state started_commands(enum state state, struct context *ctx,
 
 		// state unchanged
 		break;
+
+	case CMD_GET_FIRMWARE_HASH: {
+		uint32_t fw_len = 0;
+
+		qemu_puts("APP_CMD_GET_FIRMWARE_HASH\n");
+		if (pkt.hdr.len != 32) {
+			rsp[0] = STATUS_BAD;
+			appreply(pkt.hdr, RSP_GET_FIRMWARE_HASH, rsp);
+
+			state = STATE_FAILED;
+			break;
+		}
+
+		fw_len = pkt.cmd[1] + (pkt.cmd[2] << 8) + (pkt.cmd[3] << 16) +
+			 (pkt.cmd[4] << 24);
+
+		if (fw_len == 0 || fw_len > 8192) {
+			qemu_puts("FW size must be > 0 and <= 8192\n");
+			rsp[0] = STATUS_BAD;
+			appreply(pkt.hdr, RSP_GET_FIRMWARE_HASH, rsp);
+
+			state = STATE_FAILED;
+			break;
+		}
+
+		rsp[0] = STATUS_OK;
+		crypto_sha512(&rsp[1], (void *)TK1_ROM_BASE, fw_len);
+		appreply(pkt.hdr, RSP_GET_FIRMWARE_HASH, rsp);
+
+		// state unchanged
+		break;
+	}
 
 	case CMD_GET_PUBKEY:
 		qemu_puts("CMD_GET_PUBKEY\n");
@@ -173,28 +202,6 @@ static enum state started_commands(enum state state, struct context *ctx,
 		state = STATE_LOADING;
 		break;
 	}
-
-	case CMD_LOAD_PH_DATA:
-		qemu_puts("CMD_LOAD_PH_DATA\n");
-		// Bad length of this command
-		if (pkt.hdr.len != 128) {
-			rsp[0] = STATUS_BAD;
-			appreply(pkt.hdr, RSP_LOAD_PH_DATA, rsp);
-
-			state = STATE_FAILED;
-			break;
-		}
-
-		memcpy_s(&ctx->message, MAX_SIGN_SIZE, pkt.cmd + 1,
-			 PH_MSG_SIZE);
-
-		rsp[0] = STATUS_OK;
-		appreply(pkt.hdr, RSP_LOAD_PH_DATA, rsp);
-
-		ctx->is_prehashed = 1; // This is a prehashed message.
-
-		state = STATE_SIGNING;
-		break;
 
 	default:
 		qemu_puts("Got unknown initial command: 0x");
@@ -312,14 +319,8 @@ static enum state signing_commands(enum state state, struct context *ctx,
 		qemu_puts("Touched, now let's sign\n");
 
 		// All loaded, device touched, let's sign the message
-
-		if (ctx->is_prehashed) {
-			crypto_ed25519_ph_sign(signature, ctx->secret_key,
-					       ctx->message);
-		} else {
-			crypto_ed25519_sign(signature, ctx->secret_key,
-					    ctx->message, ctx->message_size);
-		}
+		crypto_ed25519_sign(signature, ctx->secret_key, ctx->message,
+				    ctx->message_size);
 
 		qemu_puts("Sending signature!\n");
 		memcpy_s(rsp + 1, CMDLEN_MAXBYTES, signature,

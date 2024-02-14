@@ -45,7 +45,9 @@ show-%-hash: %/app.bin
 	cd $$(dirname $^) && sha512sum app.bin
 
 check-signer-hash: signer/app.bin
-	cd signer && $(shasum) -c app.bin.sha512
+	@echo "Device app digest: "
+	@cat signer/app.bin.sha512
+	$(shasum) -c signer/app.bin.sha512
 
 .PHONY: check
 check:

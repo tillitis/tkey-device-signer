@@ -19,8 +19,9 @@ enum appcmd {
 	RSP_GET_SIG         = 0x08,
 	CMD_GET_NAMEVERSION = 0x09,
 	RSP_GET_NAMEVERSION = 0x0a,
-	CMD_LOAD_PH_DATA    = 0x0b,
-	RSP_LOAD_PH_DATA    = 0x0c,
+	CMD_GET_FIRMWARE_HASH = 0x0b,
+	RSP_GET_FIRMWARE_HASH = 0x0c,
+
 	CMD_FW_PROBE	    = 0xff,
 };
 // clang-format on
