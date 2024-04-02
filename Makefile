@@ -44,10 +44,11 @@ all: signer/app.bin check-signer-hash
 	chmod a-x $@
 
 show-%-hash: %/app.bin
-	cd $$(dirname $^) && sha512sum app.bin
+	@echo "Device app digest:"
+	@sha512sum $$(dirname $^)/app.bin
 
-check-signer-hash: signer/app.bin
-	@echo "Device app digest: "
+check-signer-hash: signer/app.bin show-signer-hash
+	@echo "Expected device app digest: "
 	@cat signer/app.bin.sha512
 	$(shasum) -c signer/app.bin.sha512
 
