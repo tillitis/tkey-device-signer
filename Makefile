@@ -6,6 +6,8 @@ else
 	shasum = sha512sum
 endif
 
+IMAGE=ghcr.io/tillitis/tkey-builder:4
+
 OBJCOPY ?= llvm-objcopy
 
 P := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -76,4 +78,4 @@ checkfmt:
 
 .PHONY: podman
 podman:
-	podman run --arch=amd64 --rm --mount type=bind,source=$(CURDIR),target=/src --mount type=bind,source=$(LIBDIR),target=/tkey-libs -w /src -it ghcr.io/tillitis/tkey-builder:2 make -j
+	podman run --arch=amd64 --rm --mount type=bind,source=$(CURDIR),target=/src --mount type=bind,source=$(LIBDIR),target=/tkey-libs -w /src -it $(IMAGE) make -j
