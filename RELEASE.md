@@ -1,5 +1,19 @@
 # Release notes
 
+## v1.0.0
+
+- Fix TOCTOU bug.
+- Remove prehash command.
+- Introduce firmware hash command.
+- Device app version now 3 since protocol changed.
+- Introduce an explicit protocol state machine, exiting early on
+  suspicious behaviour, [see implementation notes](docs/implementation-notes.md).
+- Update to tkey-libs v0.1.1.
+- Use CDI directly instead of copying.
+
+Complete
+[changelog](https://github.com/tillitis/tkey-device-signer/compare/v0.0.8...v1.0.0).
+
 ## v0.0.8
 
 - Update to use tkey-libs v0.0.2, including Monocypher 4.0.1
