@@ -294,7 +294,7 @@ static enum state signing_commands(enum state state, struct context *ctx,
 {
 	uint8_t rsp[CMDLEN_MAXBYTES] = {0}; // Response
 	uint8_t signature[64] = {0};
-	bool touched;
+	bool touched = false;
 
 	switch (pkt.cmd[0]) {
 	case CMD_GET_SIG:
@@ -307,7 +307,7 @@ static enum state signing_commands(enum state state, struct context *ctx,
 
 #ifndef TKEY_SIGNER_APP_NO_TOUCH
 		touched = touch_wait(LED_GREEN, TOUCH_TIMEOUT);
-#endif
+
 		if (!touched) {
 			rsp[0] = STATUS_BAD;
 			appreply(pkt.hdr, RSP_GET_SIG, rsp);
@@ -315,7 +315,7 @@ static enum state signing_commands(enum state state, struct context *ctx,
 			state = STATE_STARTED;
 			break;
 		}
-
+#endif
 		qemu_puts("Touched, now let's sign\n");
 
 		// All loaded, device touched, let's sign the message
