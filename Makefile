@@ -45,7 +45,7 @@ all: signer/app.bin check-signer-hash
 
 show-%-hash: %/app.bin
 	@echo "Device app digest:"
-	@sha512sum $$(dirname $^)/app.bin
+	@$(shasum) $$(dirname $^)/app.bin
 
 check-signer-hash: signer/app.bin show-signer-hash
 	@echo "Expected device app digest: "
