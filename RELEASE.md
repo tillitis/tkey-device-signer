@@ -1,5 +1,20 @@
 # Release notes
 
+## v1.0.1
+
+- Resolve a bug that prevents the signer, built without touch, to do a
+  signature.
+- Add clangd files to gitignore.
+- Use the right shasum tool in Makefile.
+- Format the app.bin.sha512 file correctly.
+
+**Note:** this release does not change the CDI generated for a signer
+built with touch (the default).
+
+Complete
+[changelog](https://github.com/tillitis/tkey-device-signer/compare/v1.0.0...v1.0.1).
+
+
 ## v1.0.0
 
 - Fix TOCTOU bug.
