@@ -38,6 +38,13 @@ LDFLAGS=-T $(LIBDIR)/app.lds -L $(LIBDIR) -lcommon -lcrt0
 .PHONY: all
 all: signer/app.bin check-signer-hash
 
+# Create compile_commands.json for clangd and LSP
+.PHONY: clangd
+clangd: compile_commands.json
+compile_commands.json:
+	$(MAKE) clean
+	bear -- make signer/app.bin
+
 # Turn elf into bin for device
 %.bin: %.elf
 	$(OBJCOPY) --input-target=elf32-littleriscv --output-target=binary $^ $@
