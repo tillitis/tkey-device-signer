@@ -133,7 +133,23 @@ These scripts automatilly clone the [tkey-libs device
 libraries](https://github.com/tillitis/tkey-libs) in a directory next
 to this one.
 
-### Installing Podman
+If you want to use a pre-built libraries, download the libraries tar
+ball from
+
+https://github.com/tillitis/tkey-libs/releases
+
+unpack it, and specify where you unpacked it in `LIBDIR` when
+building:
+
+```
+make LIBDIR=~/Downloads/tkey-libs-v0.1.1
+```
+
+Note that your `lld` might complain if they were built with a
+different version. If so, either use the same version the release used
+or use podman.
+
+### Building with Podman
 
 On Ubuntu 22.10, running
 
@@ -142,6 +158,22 @@ apt install podman rootlesskit slirp4netns
 ```
 
 should be enough to get you a working Podman setup.
+
+You can then either:
+
+- Use `build-podman.sh` as described above, which clones and builds
+  the tkey-libs libraries as well.
+
+- Download [pre-built versions of the tkey-libs
+  libraries](https://github.com/tillitis/tkey-libs/releases) and
+  define `LIBDIR` to where you unpacked the tkey-libs, something
+  like:
+
+  ```
+  make LIBDIR=$HOME/Downloads/tkey-libs-v0.1.1 podman
+  ```
+
+  Note that `~` expansion doesn't work.
 
 ### Building with host tools
 

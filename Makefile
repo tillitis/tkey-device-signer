@@ -15,7 +15,7 @@ LIBDIR ?= $(P)/../tkey-libs
 
 CC = clang
 
-INCLUDE=$(LIBDIR)/include
+INCLUDE = $(LIBDIR)/include
 
 # If you want libcommon's qemu_puts() et cetera to output something on our QEMU
 # debug port, use -DQEMU_DEBUG below
