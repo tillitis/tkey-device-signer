@@ -1,5 +1,5 @@
 // Copyright (C) 2022 - Tillitis AB
-// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-License-Identifier: BSD-2-Clause
 
 #ifndef APP_PROTO_H
 #define APP_PROTO_H
