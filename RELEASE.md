@@ -1,5 +1,20 @@
 # Release notes
 
+
+## v1.0.2
+
+- Change license to BSD-2-Clause
+- Follow REUSE specification, see https://reuse.software/
+- Bump tkey-libs to v0.1.2, also using BSD-2-Clause
+- Exit early in build scripts
+- Added make target for creating compile_commands.json for clangd
+
+**Note:** this release does not change the CDI generated for a signer
+built with touch (the default).
+
+Complete
+[changelog](https://github.com/tillitis/tkey-device-signer/compare/v1.0.1...v1.0.2).
+
 ## v1.0.1
 
 - Resolve a bug that prevents the signer, built without touch, to do a
