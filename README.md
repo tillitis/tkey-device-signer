@@ -104,6 +104,9 @@ the SPDX License List at:
 
 https://spdx.org/licenses/
 
+We attempt to follow the [REUSE
+specification](https://reuse.software/).
+
 ## Building
 
 You have two options for build tools: either you use our OCI image
