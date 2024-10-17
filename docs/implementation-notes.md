@@ -14,7 +14,7 @@ We have four states:
 - `failed`
 
 When we start the machine we start in state `started` and are ready
-for some inital commands. See [README.md](../README.md) for a complete
+for some initial commands. See [README.md](../README.md) for a complete
 description of the protocol and what we expect a well-behaved client
 to do. The state machine is here to catch clients who are not that
 well-behaved.
@@ -77,7 +77,7 @@ Commands allowed in state `loading`:
 |-------------|--------------------------------------|
 | `LOAD_DATA` | `loading` or `signing` on last chunk |
 
-We're in the process of receiveing a message to be signed. All other
+We're in the process of receiving a message to be signed. All other
 commands result in state failed. You can't go back to `started` until
 you've sent the entire message and asked for a signature or powercycle
 the TKey.
