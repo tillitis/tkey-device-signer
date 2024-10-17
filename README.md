@@ -142,7 +142,7 @@ unpack it, and specify where you unpacked it in `LIBDIR` when
 building:
 
 ```
-make LIBDIR=~/Downloads/tkey-libs-v0.1.1
+make LIBDIR=~/Downloads/tkey-libs-v0.1.2
 ```
 
 Note that your `lld` might complain if they were built with a
@@ -170,7 +170,7 @@ You can then either:
   like:
 
   ```
-  make LIBDIR=$HOME/Downloads/tkey-libs-v0.1.1 podman
+  make LIBDIR=$HOME/Downloads/tkey-libs-v0.1.2 podman
   ```
 
   Note that `~` expansion doesn't work.

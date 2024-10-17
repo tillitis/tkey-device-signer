@@ -5,7 +5,7 @@
 
 set -e
 
-tkey_libs_version="v0.1.1"
+tkey_libs_version="v0.1.2"
 
 printf "Building tkey-libs with version: %s\n" "$tkey_libs_version"
 
