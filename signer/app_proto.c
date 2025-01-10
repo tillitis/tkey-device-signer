@@ -5,9 +5,13 @@
 
 #include "app_proto.h"
 
+#define MODE_CDC 0x40
+
 // Send reply frame with response status Not OK (NOK==1), shortest length
 void appreply_nok(struct frame_header hdr)
 {
+	writebyte(MODE_CDC);
+	writebyte(2);
 	writebyte(genhdr(hdr.id, hdr.endpoint, 0x1, LEN_1));
 	writebyte(0);
 }
@@ -58,6 +62,8 @@ void appreply(struct frame_header hdr, enum appcmd rspcode, void *buf)
 	}
 
 	// Frame Protocol Header
+	writebyte(MODE_CDC);
+	writebyte(1 + 1 + (nbytes - 1));
 	writebyte(genhdr(hdr.id, hdr.endpoint, 0x0, len));
 
 	// app protocol header is 1 byte response code
