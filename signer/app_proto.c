@@ -5,8 +5,6 @@
 
 #include "app_proto.h"
 
-#define MODE_CDC 0x40
-
 // Send reply frame with response status Not OK (NOK==1), shortest length
 void appreply_nok(struct frame_header hdr)
 {
