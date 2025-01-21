@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2022 Tillitis AB <tillitis.se>
 // SPDX-License-Identifier: BSD-2-Clause
 
-#include <tkey/qemu_debug.h>
+#include <tkey/debug.h>
 
 #include "app_proto.h"
 
@@ -52,9 +52,9 @@ void appreply(struct frame_header hdr, enum appcmd rspcode, void *buf)
 		break;
 
 	default:
-		qemu_puts("appreply(): Unknown response code: ");
-		qemu_puthex(rspcode);
-		qemu_lf();
+		debug_puts("appreply(): Unknown response code: ");
+		debug_puthex(rspcode);
+		debug_lf();
 
 		return;
 	}
