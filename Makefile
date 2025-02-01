@@ -59,9 +59,11 @@ check-signer-hash: signer/app.bin show-signer-hash
 	@cat signer/app.bin.sha512
 	$(shasum) -c signer/app.bin.sha512
 
+CLANG_TIDY = clang-tidy
+
 .PHONY: check
 check:
-	clang-tidy -header-filter=.* -checks=cert-* signer/*.[ch] -- $(CFLAGS)
+	$(CLANG_TIDY) -header-filter=.* -checks=cert-* signer/*.[ch] -- $(CFLAGS)
 
 # Simple ed25519 signer app
 SIGNEROBJS=signer/main.o signer/app_proto.o
