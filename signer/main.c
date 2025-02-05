@@ -59,8 +59,7 @@ static enum state loading_commands(enum state state, struct context *ctx,
 				   struct packet pkt);
 static enum state signing_commands(enum state state, struct context *ctx,
 				   struct packet pkt);
-static int read_command(struct frame_header *hdr, uint8_t *cmd, uint8_t *mode,
-			uint8_t *mode_bytes_left);
+static int read_command(struct frame_header *hdr, uint8_t *cmd);
 static void wipe_context(struct context *ctx);
 
 static void wipe_context(struct context *ctx)
@@ -349,15 +348,14 @@ static enum state signing_commands(enum state state, struct context *ctx,
 
 // read_command takes a frame header and a command to fill in after
 // parsing. It returns 0 on success.
-static int read_command(struct frame_header *hdr, uint8_t *cmd, uint8_t *mode,
-			uint8_t *mode_bytes_left)
+static int read_command(struct frame_header *hdr, uint8_t *cmd)
 {
 	uint8_t in = 0;
 
 	memset(hdr, 0, sizeof(struct frame_header));
 	memset(cmd, 0, CMDLEN_MAXBYTES);
 
-	in = readbyte(mode, mode_bytes_left);
+	read(&in, CMDLEN_MAXBYTES, 1, MODE_CDC);
 
 	if (parseframe(in, hdr) == -1) {
 		debug_puts("Couldn't parse header\n");
@@ -365,7 +363,7 @@ static int read_command(struct frame_header *hdr, uint8_t *cmd, uint8_t *mode,
 	}
 
 	// Now we know the size of the cmd frame, read it all
-	if (read(cmd, CMDLEN_MAXBYTES, hdr->len, mode, mode_bytes_left) != 0) {
+	if (read(cmd, CMDLEN_MAXBYTES, hdr->len, MODE_CDC) != 0) {
 		debug_puts("read: buffer overrun\n");
 		return -1;
 	}
@@ -398,9 +396,6 @@ int main(void)
 	enum state state = STATE_STARTED;
 	struct packet pkt = {0};
 
-	uint8_t mode = 0;
-	uint8_t mode_bytes_left = 0;
-
 	// Use Execution Monitor on RAM after app
 	*cpu_mon_first = *app_addr + *app_size;
 	*cpu_mon_last = TK1_RAM_BASE + TK1_RAM_SIZE;
@@ -416,7 +411,7 @@ int main(void)
 		debug_putinthex(state);
 		debug_lf();
 
-		if (read_command(&pkt.hdr, pkt.cmd, &mode, &mode_bytes_left) !=
+		if (read_command(&pkt.hdr, pkt.cmd) !=
 		    0) {
 			state = STATE_FAILED;
 		}
