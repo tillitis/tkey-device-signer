@@ -8,10 +8,11 @@
 // Send reply frame with response status Not OK (NOK==1), shortest length
 void appreply_nok(struct frame_header hdr)
 {
-	writebyte(MODE_CDC);
-	writebyte(2);
-	writebyte(genhdr(hdr.id, hdr.endpoint, 0x1, LEN_1));
-	writebyte(0);
+	uint8_t buf[2];
+
+	buf[0] = genhdr(hdr.id, hdr.endpoint, 0x1, LEN_1);
+	buf[1] = 0; // Not used, but smallest payload is 1 byte
+	write(buf, 2, MODE_CDC);
 }
 
 // Send app reply with frame header, response code, and LEN_X-1 bytes from buf
@@ -19,6 +20,7 @@ void appreply(struct frame_header hdr, enum appcmd rspcode, void *buf)
 {
 	size_t nbytes = 0;
 	enum cmdlen len = LEN_1;
+	uint8_t frame[2 + 128]; // Frame header + longest response
 
 	switch (rspcode) {
 	case RSP_GET_PUBKEY:
@@ -60,13 +62,12 @@ void appreply(struct frame_header hdr, enum appcmd rspcode, void *buf)
 	}
 
 	// Frame Protocol Header
-	writebyte(MODE_CDC);
-	writebyte(1 + 1 + (nbytes - 1));
-	writebyte(genhdr(hdr.id, hdr.endpoint, 0x0, len));
+	frame[0] = genhdr(hdr.id, hdr.endpoint, 0x0, len);
+	// App protocol header (included in nbytes?=
+	frame[1] = rspcode;
 
-	// app protocol header is 1 byte response code
-	writebyte(rspcode);
-	nbytes--;
+	// Payload
+	memcpy(&frame[2], buf, nbytes);
 
-	write(buf, nbytes);
+	write(frame, 1 + 1 + (nbytes - 1), MODE_CDC);
 }
