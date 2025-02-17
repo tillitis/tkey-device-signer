@@ -17,13 +17,14 @@ CC = clang
 
 INCLUDE = $(LIBDIR)/include
 
-# If you want libcommon's qemu_puts() et cetera to output something on our QEMU
-# debug port, use -DQEMU_DEBUG below
+# If you want libcommon's debug_puts() et cetera to output something
+# on the QEMU debug port, use -DQEMU_DEBUG, or -DTKEY_DEBUG if you
+# want it on the TKey HID debug endpoint
 CFLAGS = -target riscv32-unknown-none-elf -march=rv32iczmmul -mabi=ilp32 -mcmodel=medany \
    -static -std=gnu99 -O2 -ffast-math -fno-common -fno-builtin-printf \
    -fno-builtin-putchar -nostdlib -mno-relax -flto -g \
    -Wall -Werror=implicit-function-declaration \
-   -I $(INCLUDE) -I $(LIBDIR) #-DQEMU_DEBUG
+   -I $(INCLUDE) -I $(LIBDIR) #-DTKEY_DEBUG #-DQEMU_DEBUG
 
 ifneq ($(TKEY_SIGNER_APP_NO_TOUCH),)
 CFLAGS := $(CFLAGS) -DTKEY_SIGNER_APP_NO_TOUCH

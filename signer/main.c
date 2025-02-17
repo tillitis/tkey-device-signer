@@ -4,9 +4,10 @@
 #include <monocypher/monocypher-ed25519.h>
 #include <stdbool.h>
 #include <tkey/assert.h>
+#include <tkey/debug.h>
+#include <tkey/io.h>
 #include <tkey/led.h>
 #include <tkey/proto.h>
-#include <tkey/qemu_debug.h>
 #include <tkey/tk1_mem.h>
 #include <tkey/touch.h>
 
@@ -89,6 +90,10 @@ static enum state started_commands(enum state state, struct context *ctx,
 	size_t rsp_left =
 	    CMDLEN_MAXBYTES; // How many bytes left in response buf
 
+	debug_puts("started_commands, command: ");
+	debug_putinthex(pkt.cmd[0]);
+	debug_lf();
+
 	// Smallest possible payload length (cmd) is 1 byte.
 	switch (pkt.cmd[0]) {
 	case CMD_FW_PROBE:
@@ -97,7 +102,7 @@ static enum state started_commands(enum state state, struct context *ctx,
 		break;
 
 	case CMD_GET_NAMEVERSION:
-		qemu_puts("CMD_GET_NAMEVERSION\n");
+		debug_puts("CMD_GET_NAMEVERSION\n");
 		if (pkt.hdr.len != 1) {
 			// Bad length
 			state = STATE_FAILED;
@@ -120,7 +125,7 @@ static enum state started_commands(enum state state, struct context *ctx,
 	case CMD_GET_FIRMWARE_HASH: {
 		uint32_t fw_len = 0;
 
-		qemu_puts("APP_CMD_GET_FIRMWARE_HASH\n");
+		debug_puts("APP_CMD_GET_FIRMWARE_HASH\n");
 		if (pkt.hdr.len != 32) {
 			rsp[0] = STATUS_BAD;
 			appreply(pkt.hdr, RSP_GET_FIRMWARE_HASH, rsp);
@@ -133,7 +138,7 @@ static enum state started_commands(enum state state, struct context *ctx,
 			 (pkt.cmd[4] << 24);
 
 		if (fw_len == 0 || fw_len > 8192) {
-			qemu_puts("FW size must be > 0 and <= 8192\n");
+			debug_puts("FW size must be > 0 and <= 8192\n");
 			rsp[0] = STATUS_BAD;
 			appreply(pkt.hdr, RSP_GET_FIRMWARE_HASH, rsp);
 
@@ -150,7 +155,7 @@ static enum state started_commands(enum state state, struct context *ctx,
 	}
 
 	case CMD_GET_PUBKEY:
-		qemu_puts("CMD_GET_PUBKEY\n");
+		debug_puts("CMD_GET_PUBKEY\n");
 		if (pkt.hdr.len != 1) {
 			// Bad length
 			state = STATE_FAILED;
@@ -166,7 +171,7 @@ static enum state started_commands(enum state state, struct context *ctx,
 	case CMD_SET_SIZE: {
 		uint32_t local_message_size = 0;
 
-		qemu_puts("CMD_SET_SIZE\n");
+		debug_puts("CMD_SET_SIZE\n");
 		// Bad length
 		if (pkt.hdr.len != 32) {
 			rsp[0] = STATUS_BAD;
@@ -182,7 +187,7 @@ static enum state started_commands(enum state state, struct context *ctx,
 
 		if (local_message_size == 0 ||
 		    local_message_size > MAX_SIGN_SIZE) {
-			qemu_puts("Message size not within range!\n");
+			debug_puts("Message size not within range!\n");
 			rsp[0] = STATUS_BAD;
 			appreply(pkt.hdr, RSP_SET_SIZE, rsp);
 
@@ -204,9 +209,9 @@ static enum state started_commands(enum state state, struct context *ctx,
 	}
 
 	default:
-		qemu_puts("Got unknown initial command: 0x");
-		qemu_puthex(pkt.cmd[0]);
-		qemu_lf();
+		debug_puts("Got unknown initial command: 0x");
+		debug_puthex(pkt.cmd[0]);
+		debug_lf();
 
 		state = STATE_FAILED;
 		break;
@@ -231,7 +236,7 @@ static enum state loading_commands(enum state state, struct context *ctx,
 
 	switch (pkt.cmd[0]) {
 	case CMD_LOAD_DATA: {
-		qemu_puts("CMD_LOAD_DATA\n");
+		debug_puts("CMD_LOAD_DATA\n");
 
 		// Bad length
 		if (pkt.hdr.len != CMDLEN_MAXBYTES) {
@@ -268,9 +273,9 @@ static enum state loading_commands(enum state state, struct context *ctx,
 	}
 
 	default:
-		qemu_puts("Got unknown loading command: 0x");
-		qemu_puthex(pkt.cmd[0]);
-		qemu_lf();
+		debug_puts("Got unknown loading command: 0x");
+		debug_puthex(pkt.cmd[0]);
+		debug_lf();
 
 		state = STATE_FAILED;
 		break;
@@ -298,7 +303,7 @@ static enum state signing_commands(enum state state, struct context *ctx,
 
 	switch (pkt.cmd[0]) {
 	case CMD_GET_SIG:
-		qemu_puts("CMD_GET_SIG\n");
+		debug_puts("CMD_GET_SIG\n");
 		if (pkt.hdr.len != 1) {
 			// Bad length
 			state = STATE_FAILED;
@@ -316,13 +321,13 @@ static enum state signing_commands(enum state state, struct context *ctx,
 			break;
 		}
 #endif
-		qemu_puts("Touched, now let's sign\n");
+		debug_puts("Touched, now let's sign\n");
 
 		// All loaded, device touched, let's sign the message
 		crypto_ed25519_sign(signature, ctx->secret_key, ctx->message,
 				    ctx->message_size);
 
-		qemu_puts("Sending signature!\n");
+		debug_puts("Sending signature!\n");
 		memcpy_s(rsp + 1, CMDLEN_MAXBYTES, signature,
 			 sizeof(signature));
 		appreply(pkt.hdr, RSP_GET_SIG, rsp);
@@ -335,9 +340,9 @@ static enum state signing_commands(enum state state, struct context *ctx,
 		break;
 
 	default:
-		qemu_puts("Got unknown signing command: 0x");
-		qemu_puthex(pkt.cmd[0]);
-		qemu_lf();
+		debug_puts("Got unknown signing command: 0x");
+		debug_puthex(pkt.cmd[0]);
+		debug_lf();
 
 		state = STATE_FAILED;
 		break;
@@ -351,38 +356,69 @@ static enum state signing_commands(enum state state, struct context *ctx,
 static int read_command(struct frame_header *hdr, uint8_t *cmd)
 {
 	uint8_t in = 0;
+	uint8_t available = 0;
+	enum ioend endpoint = IO_NONE;
 
 	memset(hdr, 0, sizeof(struct frame_header));
 	memset(cmd, 0, CMDLEN_MAXBYTES);
 
-	in = readbyte();
-
-	if (parseframe(in, hdr) == -1) {
-		qemu_puts("Couldn't parse header\n");
+	if (readselect(IO_CDC, &endpoint, &available) < 0) {
+		debug_puts("readselect errror");
 		return -1;
 	}
 
-	// Now we know the size of the cmd frame, read it all
-	if (read(cmd, CMDLEN_MAXBYTES, hdr->len) != 0) {
-		qemu_puts("read: buffer overrun\n");
+	if (read(IO_CDC, &in, 1, 1) < 0) {
 		return -1;
+	}
+
+	if (parseframe(in, hdr) == -1) {
+		debug_puts("Couldn't parse header\n");
+		return -1;
+	}
+
+	for (uint8_t n = 0; n < hdr->len;) {
+		if (readselect(IO_CDC, &endpoint, &available) < 0) {
+			debug_puts("readselect errror");
+			return -1;
+		}
+
+		// Read as much as is available of what we expect from
+		// the frame.
+		available = available > hdr->len ? hdr->len : available;
+
+		debug_puts("reading ");
+		debug_putinthex(available);
+		debug_lf();
+
+		int nbytes =
+		    read(IO_CDC, &cmd[n], CMDLEN_MAXBYTES - n, available);
+		if (nbytes < 0) {
+			debug_puts("read: buffer overrun\n");
+
+			return -1;
+		}
+
+		n += nbytes;
 	}
 
 	// Well-behaved apps are supposed to check for a client
 	// attempting to probe for firmware. In that case destination
-	// is firmware and we just reply NOK.
+	// is firmware and we just reply NOK, discarding all bytes
+	// already read.
 	if (hdr->endpoint == DST_FW) {
 		appreply_nok(*hdr);
-		qemu_puts("Responded NOK to message meant for fw\n");
+		debug_puts("Responded NOK to message meant for fw\n");
 		cmd[0] = CMD_FW_PROBE;
+
 		return 0;
 	}
 
-	// Is it for us?
+	// Is it for us? If not, return error after having discarded
+	// all bytes.
 	if (hdr->endpoint != DST_SW) {
-		qemu_puts("Message not meant for app. endpoint was 0x");
-		qemu_puthex(hdr->endpoint);
-		qemu_lf();
+		debug_puts("Message not meant for app. endpoint was 0x");
+		debug_puthex(hdr->endpoint);
+		debug_lf();
 
 		return -1;
 	}
@@ -407,11 +443,12 @@ int main(void)
 	crypto_ed25519_key_pair(ctx.secret_key, ctx.pubkey, (uint8_t *)cdi);
 
 	for (;;) {
-		qemu_puts("parser state: ");
-		qemu_putinthex(state);
-		qemu_lf();
+		debug_puts("parser state: ");
+		debug_putinthex(state);
+		debug_lf();
 
 		if (read_command(&pkt.hdr, pkt.cmd) != 0) {
+			debug_puts("read_command returned != 0!\n");
 			state = STATE_FAILED;
 		}
 
@@ -432,9 +469,9 @@ int main(void)
 			// fallthrough
 
 		default:
-			qemu_puts("parser state 0x");
-			qemu_puthex(state);
-			qemu_lf();
+			debug_puts("parser state 0x");
+			debug_puthex(state);
+			debug_lf();
 			assert(1 == 2);
 			break; // Not reached
 		}

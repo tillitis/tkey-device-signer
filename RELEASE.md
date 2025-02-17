@@ -1,5 +1,13 @@
 # Release notes
 
+## Unreleased
+
+- Adapt to use new USB Mode Protocol and new I/O functions.
+  Note that debug flags in the Makefile have changed for use of the
+  `debug_*()` functions. Use `-DQEMU_DEBUG` for QEMU output or
+  `-DTKEY_DEBUG` to direct them to the new debug HID endpoint.
+
+**Note well**: This version CHANGES all the SSH keys!
 
 ## v1.0.2
 
