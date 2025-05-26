@@ -6,7 +6,7 @@ else
 	shasum = sha512sum
 endif
 
-IMAGE=ghcr.io/tillitis/tkey-builder:4
+IMAGE=ghcr.io/tillitis/tkey-builder:5rc1
 
 OBJCOPY ?= llvm-objcopy
 
