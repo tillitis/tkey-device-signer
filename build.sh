@@ -5,7 +5,7 @@
 
 set -eu
 
-tkey_libs_version="v0.1.2"
+tkey_libs_version="castor-alpha-1"
 
 printf "Building tkey-libs with version: %s\n" "$tkey_libs_version"
 
