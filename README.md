@@ -11,6 +11,9 @@ digital signatures of files.
 
 See [Release notes](RELEASE.md).
 
+**Note well**: Temporarily during development the version in main
+**ONLY** work on "Castor" TKeys.
+
 ## Client Go package
 
 We provide a Go package to use with `signer`:
