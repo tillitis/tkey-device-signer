@@ -439,6 +439,10 @@ int main(void)
 
 	led_set(LED_BLUE);
 
+#ifdef TKEY_DEBUG
+	config_endpoints(IO_CDC | IO_DEBUG);
+#endif
+
 	// Generate a public key from CDI
 	crypto_ed25519_key_pair(ctx.secret_key, ctx.pubkey, (uint8_t *)cdi);
 
