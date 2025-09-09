@@ -7,6 +7,10 @@
   `debug_*()` functions. Use `-DQEMU_DEBUG` for QEMU output or
   `-DTKEY_DEBUG` to direct them to the new debug HID endpoint.
 
+- Automatically detect if the device app is running on Castor and use
+  the new functions, otherwise fall back to earlier behaviour without
+  the USB Mode Protocol.
+
 **Note well**: This version CHANGES all the SSH keys!
 
 ## v1.0.2

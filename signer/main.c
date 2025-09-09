@@ -12,6 +12,7 @@
 #include <tkey/touch.h>
 
 #include "app_proto.h"
+#include "platform.h"
 
 // clang-format off
 static volatile uint32_t *cdi           = (volatile uint32_t *) TK1_MMIO_TK1_CDI_FIRST;
@@ -20,6 +21,7 @@ static volatile uint32_t *cpu_mon_first = (volatile uint32_t *) TK1_MMIO_TK1_CPU
 static volatile uint32_t *cpu_mon_last  = (volatile uint32_t *) TK1_MMIO_TK1_CPU_MON_LAST;
 static volatile uint32_t *app_addr      = (volatile uint32_t *) TK1_MMIO_TK1_APP_ADDR;
 static volatile uint32_t *app_size      = (volatile uint32_t *) TK1_MMIO_TK1_APP_SIZE;
+static volatile uint32_t *ver		= (volatile uint32_t *) TK1_MMIO_TK1_VERSION;
 // clang-format on
 
 // Touch timeout in seconds
@@ -362,13 +364,19 @@ static int read_command(struct frame_header *hdr, uint8_t *cmd)
 	memset(hdr, 0, sizeof(struct frame_header));
 	memset(cmd, 0, CMDLEN_MAXBYTES);
 
-	if (readselect(IO_CDC, &endpoint, &available) < 0) {
-		debug_puts("readselect errror");
-		return -1;
-	}
+	if (*ver >= CASTORVERSION) {
+		if (readselect(IO_CDC, &endpoint, &available) < 0) {
+			debug_puts("readselect errror");
+			return -1;
+		}
 
-	if (read(IO_CDC, &in, 1, 1) < 0) {
-		return -1;
+		if (read(IO_CDC, &in, 1, 1) < 0) {
+			return -1;
+		}
+	} else {
+		if (uart_read(&in, 1, 1) < 0) {
+			return -1;
+		}
 	}
 
 	if (parseframe(in, hdr) == -1) {
@@ -376,29 +384,35 @@ static int read_command(struct frame_header *hdr, uint8_t *cmd)
 		return -1;
 	}
 
-	for (uint8_t n = 0; n < hdr->len;) {
-		if (readselect(IO_CDC, &endpoint, &available) < 0) {
-			debug_puts("readselect errror");
+	if (*ver >= CASTORVERSION) {
+		for (uint8_t n = 0; n < hdr->len;) {
+			if (readselect(IO_CDC, &endpoint, &available) < 0) {
+				debug_puts("readselect errror");
+				return -1;
+			}
+
+			// Read as much as is available of what we expect from
+			// the frame.
+			available = available > hdr->len ? hdr->len : available;
+
+			debug_puts("reading ");
+			debug_putinthex(available);
+			debug_lf();
+
+			int nbytes = read(IO_CDC, &cmd[n], CMDLEN_MAXBYTES - n,
+					  available);
+			if (nbytes < 0) {
+				debug_puts("read: buffer overrun\n");
+
+				return -1;
+			}
+
+			n += nbytes;
+		}
+	} else {
+		if (uart_read(cmd, CMDLEN_MAXBYTES, hdr->len) < 0) {
 			return -1;
 		}
-
-		// Read as much as is available of what we expect from
-		// the frame.
-		available = available > hdr->len ? hdr->len : available;
-
-		debug_puts("reading ");
-		debug_putinthex(available);
-		debug_lf();
-
-		int nbytes =
-		    read(IO_CDC, &cmd[n], CMDLEN_MAXBYTES - n, available);
-		if (nbytes < 0) {
-			debug_puts("read: buffer overrun\n");
-
-			return -1;
-		}
-
-		n += nbytes;
 	}
 
 	// Well-behaved apps are supposed to check for a client
