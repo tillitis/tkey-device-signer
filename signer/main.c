@@ -7,12 +7,12 @@
 #include <tkey/debug.h>
 #include <tkey/io.h>
 #include <tkey/led.h>
+#include <tkey/platform.h>
 #include <tkey/proto.h>
 #include <tkey/tk1_mem.h>
 #include <tkey/touch.h>
 
 #include "app_proto.h"
-#include "platform.h"
 
 // clang-format off
 static volatile uint32_t *cdi           = (volatile uint32_t *) TK1_MMIO_TK1_CDI_FIRST;
@@ -364,7 +364,7 @@ static int read_command(struct frame_header *hdr, uint8_t *cmd)
 	memset(hdr, 0, sizeof(struct frame_header));
 	memset(cmd, 0, CMDLEN_MAXBYTES);
 
-	if (*ver >= CASTORVERSION) {
+	if (*ver >= TKEY_VERSION_CASTOR) {
 		if (readselect(IO_CDC, &endpoint, &available) < 0) {
 			debug_puts("readselect errror");
 			return -1;
@@ -384,7 +384,7 @@ static int read_command(struct frame_header *hdr, uint8_t *cmd)
 		return -1;
 	}
 
-	if (*ver >= CASTORVERSION) {
+	if (*ver >= TKEY_VERSION_CASTOR) {
 		for (uint8_t n = 0; n < hdr->len;) {
 			if (readselect(IO_CDC, &endpoint, &available) < 0) {
 				debug_puts("readselect errror");

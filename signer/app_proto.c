@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: BSD-2-Clause
 
 #include <tkey/debug.h>
+#include <tkey/platform.h>
 #include <tkey/tk1_mem.h>
 
 #include "app_proto.h"
-#include "platform.h"
 
 // clang-format off
 static volatile uint32_t *ver		= (volatile uint32_t *) TK1_MMIO_TK1_VERSION;
@@ -20,7 +20,7 @@ void appreply_nok(struct frame_header hdr)
 	buf[0] = genhdr(hdr.id, hdr.endpoint, 0x1, LEN_1);
 	buf[1] = 0; // Not used, but smallest payload is 1 byte
 
-	if (*ver < CASTORVERSION) {
+	if (*ver < TKEY_VERSION_CASTOR) {
 		dst = IO_UART;
 	}
 
@@ -83,7 +83,7 @@ void appreply(struct frame_header hdr, enum appcmd rspcode, void *buf)
 	// Copy payload after app protocol header
 	memcpy(&frame[2], buf, nbytes - 1);
 
-	if (*ver < CASTORVERSION) {
+	if (*ver < TKEY_VERSION_CASTOR) {
 		dst = IO_UART;
 	}
 
