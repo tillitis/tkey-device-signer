@@ -29,5 +29,6 @@ enum appcmd {
 
 void appreply_nok(struct frame_header hdr);
 void appreply(struct frame_header hdr, enum appcmd rspcode, void *buf);
+int read_command(struct frame_header *hdr, uint8_t *cmd);
 
 #endif
