@@ -19,6 +19,14 @@ static volatile uint32_t *cpu_mon_first = (volatile uint32_t *) TK1_MMIO_TK1_CPU
 static volatile uint32_t *cpu_mon_last  = (volatile uint32_t *) TK1_MMIO_TK1_CPU_MON_LAST;
 static volatile uint32_t *app_addr      = (volatile uint32_t *) TK1_MMIO_TK1_APP_ADDR;
 static volatile uint32_t *app_size      = (volatile uint32_t *) TK1_MMIO_TK1_APP_SIZE;
+static volatile uint32_t *ver		= (volatile uint32_t *) TK1_MMIO_TK1_VERSION;
+
+
+#define TIMER (*(volatile uint32_t *)TK1_MMIO_TIMER_TIMER)
+#define TIMER_PRESCALER (*(volatile uint32_t *)TK1_MMIO_TIMER_PRESCALER)
+#define TIMER_STATUS (*(volatile uint32_t *)TK1_MMIO_TIMER_STATUS)
+#define TIMER_CTRL (*(volatile uint32_t *)TK1_MMIO_TIMER_CTRL)
+
 // clang-format on
 
 // Touch timeout in seconds
@@ -35,6 +43,29 @@ enum state {
 	STATE_SIGNING,
 	STATE_FAILED,
 };
+
+static void timer_start(void)
+{
+	TIMER_CTRL |= (1 << TK1_MMIO_TIMER_CTRL_STOP_BIT);
+	TIMER_PRESCALER = 1;
+	TIMER = ~0;
+	TIMER_CTRL |= (1 << TK1_MMIO_TIMER_CTRL_START_BIT);
+}
+
+static uint32_t timer_end(void)
+{
+	uint32_t end = TIMER;
+	TIMER_CTRL |= (1 << TK1_MMIO_TIMER_CTRL_STOP_BIT);
+	return ~end;
+}
+
+// static void print_cycles(const char *label, uint32_t cycles)
+// {
+// 	debug_puts(label);
+// 	debug_puts(" cycles: ");
+// 	debug_putinthex(cycles);
+// 	debug_puts("\n");
+// }
 
 // Context for the loading of a message
 struct context {
@@ -319,12 +350,23 @@ static enum state signing_commands(enum state state, struct context *ctx,
 		qemu_puts("Touched, now let's sign\n");
 
 		// All loaded, device touched, let's sign the message
+		timer_start();
 		crypto_ed25519_sign(signature, ctx->secret_key, ctx->message,
 				    ctx->message_size);
+		uint32_t sign_cycles = timer_end();
+
+		// print_cycles("ED sign", sign_cycles);
 
 		qemu_puts("Sending signature!\n");
-		memcpy_s(rsp + 1, CMDLEN_MAXBYTES, signature,
-			 sizeof(signature));
+		memcpy_s(rsp + 1, CMDLEN_MAXBYTES, &sign_cycles,
+			 4);
+		rsp[1] = (sign_cycles >> 24) & 0xFF;
+		rsp[2] = (sign_cycles >> 16) & 0xFF;
+		rsp[3] = (sign_cycles >> 8) & 0xFF;
+		rsp[4] = (sign_cycles >> 0) & 0xFF;
+
+		// memcpy_s(rsp + 1, CMDLEN_MAXBYTES, signature,
+		// 	 sizeof(signature));
 		appreply(pkt.hdr, RSP_GET_SIG, rsp);
 
 		// Forget signature and most of context

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 
 #include <tkey/qemu_debug.h>
+#include <tkey/tk1_mem.h>
 
 #include "app_proto.h"
 
