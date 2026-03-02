@@ -3,6 +3,7 @@
 
 #include <tkey/debug.h>
 #include <tkey/tk1_mem.h>
+#include <string.h>
 
 #include "app_proto.h"
 #include "platform.h"
