@@ -453,9 +453,13 @@ int main(void)
 
 	led_set(LED_BLUE);
 
+	if (*ver >= CASTORVERSION) {
 #ifdef TKEY_DEBUG
-	config_endpoints(IO_CDC | IO_DEBUG);
+		config_endpoints(IO_CDC | IO_DEBUG);
+#else
+		config_endpoints(IO_CDC);
 #endif
+	}
 
 	// Generate a public key from CDI
 	crypto_ed25519_key_pair(ctx.secret_key, ctx.pubkey, (uint8_t *)cdi);
