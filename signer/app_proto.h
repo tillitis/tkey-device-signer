@@ -4,7 +4,6 @@
 #ifndef APP_PROTO_H
 #define APP_PROTO_H
 
-#include <tkey/io.h>
 #include <tkey/lib.h>
 #include <tkey/proto.h>
 
@@ -22,6 +21,11 @@ enum appcmd {
 	RSP_GET_NAMEVERSION = 0x0a,
 	CMD_GET_FIRMWARE_HASH = 0x0b,
 	RSP_GET_FIRMWARE_HASH = 0x0c,
+
+	// Standardized reset command, also implemented by e.g. the
+	// verifier and tkey-fido2. Lets a client ask the currently
+	// running app to reset the TKey into an arbitrary boot path.
+	CMD_RESET	    = 0xfe,
 
 	CMD_FW_PROBE	    = 0xff,
 };

@@ -1,30 +1,17 @@
 // SPDX-FileCopyrightText: 2022 Tillitis AB <tillitis.se>
 // SPDX-License-Identifier: BSD-2-Clause
 
+#include <string.h>
 #include <tkey/debug.h>
-#include <tkey/tk1_mem.h>
 
 #include "app_proto.h"
-#include "platform.h"
-
-// clang-format off
-static volatile uint32_t *ver		= (volatile uint32_t *) TK1_MMIO_TK1_VERSION;
-// clang-format on
 
 // Send reply frame with response status Not OK (NOK==1), shortest length
 void appreply_nok(struct frame_header hdr)
 {
-	uint8_t buf[2];
-	enum ioend dst = IO_CDC;
+	uint8_t buf[1] = {0}; // Not used, but smallest payload is 1 byte
 
-	buf[0] = genhdr(hdr.id, hdr.endpoint, 0x1, LEN_1);
-	buf[1] = 0; // Not used, but smallest payload is 1 byte
-
-	if (*ver < CASTORVERSION) {
-		dst = IO_UART;
-	}
-
-	write(dst, buf, 2);
+	frame_write(FRAME_STATUS_NOK, hdr.id, hdr.f_domain, buf, 1);
 }
 
 // Send app reply with frame header, response code, and LEN_X-1 bytes from buf
@@ -32,38 +19,30 @@ void appreply(struct frame_header hdr, enum appcmd rspcode, void *buf)
 {
 	size_t nbytes = 0; // Number of bytes in a reply frame
 			   // (including rspcode).
-	enum cmdlen len = LEN_1;
-	uint8_t frame[1 + 128];	 // Frame header + longest response
-	enum ioend dst = IO_CDC; // I/O destination.
+	uint8_t frame[128]; // Longest response
 
 	switch (rspcode) {
 	case RSP_GET_PUBKEY:
-		len = LEN_128;
 		nbytes = 128;
 		break;
 
 	case RSP_SET_SIZE:
-		len = LEN_4;
 		nbytes = 4;
 		break;
 
 	case RSP_LOAD_DATA:
-		len = LEN_4;
 		nbytes = 4;
 		break;
 
 	case RSP_GET_SIG:
-		len = LEN_128;
 		nbytes = 128;
 		break;
 
 	case RSP_GET_NAMEVERSION:
-		len = LEN_32;
 		nbytes = 32;
 		break;
 
 	case RSP_GET_FIRMWARE_HASH:
-		len = LEN_128;
 		nbytes = 128;
 		break;
 
@@ -75,17 +54,11 @@ void appreply(struct frame_header hdr, enum appcmd rspcode, void *buf)
 		return;
 	}
 
-	// Frame Protocol Header
-	frame[0] = genhdr(hdr.id, hdr.endpoint, 0x0, len);
 	// App protocol header
-	frame[1] = rspcode;
+	frame[0] = rspcode;
 
 	// Copy payload after app protocol header
-	memcpy(&frame[2], buf, nbytes - 1);
+	memcpy(&frame[1], buf, nbytes - 1);
 
-	if (*ver < CASTORVERSION) {
-		dst = IO_UART;
-	}
-
-	write(dst, frame, 1 + nbytes);
+	frame_write(FRAME_STATUS_OK, hdr.id, hdr.f_domain, frame, nbytes);
 }
