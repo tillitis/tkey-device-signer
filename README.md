@@ -2,6 +2,24 @@
 
 # Tillitis TKey Signer
 
+> ℹ️ This branch is for demo purpose
+>
+> **`castor-support-demo` branch:** migrates to tkey-libs
+> `TK1-Q-beta-1` (`frame_read()`/`frame_write()`), dropping the
+> Bellatrix/Castor runtime check — this build targets Castor only.
+> Also adds the standardized reset command (`CMD_RESET`) and changes
+> the LED to be off while idle, on only while booting, loading, or
+> signing.
+>
+> Requires tkey-libs `TK1-Q-beta-1` — `build.sh`/`build-podman.sh`
+> check this out automatically, but a manually supplied `LIBDIR` must
+> also be that version, since older tkey-libs releases have an
+> incompatible ABI. No other special build steps beyond the usual
+> `make`.
+>
+> To test end to end, use `tkey-ssh-agent`'s `castor-support-demo`
+> branch, against a real Castor TKey or the `tk1-castor` QEMU machine.
+
 The TKey `signer` device application is an ed25519 signing tool. It
 can sign messages up to 4 kByte. It is, for instance, used by the
 [tkey-ssh-agent](https://github.com/tillitis/tkey-ssh-agent) for SSH
