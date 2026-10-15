@@ -415,8 +415,6 @@ int main(void)
 	*cpu_mon_last = TK1_RAM_BASE + TK1_RAM_SIZE;
 	*cpu_mon_ctrl = 1;
 
-	led_set(LED_BLUE);
-
 #ifdef TKEY_DEBUG
 	config_endpoints(IO_CDC | IO_DEBUG);
 #endif
@@ -428,6 +426,12 @@ int main(void)
 		debug_puts("parser state: ");
 		debug_putinthex(state);
 		debug_lf();
+
+		// LED is off while idle, on while actively loading or
+		// signing a message. touch_wait() (called from
+		// signing_commands()) takes over blinking the LED while
+		// waiting for touch and restores this value afterwards.
+		led_set(state == STATE_STARTED ? LED_BLACK : LED_BLUE);
 
 		if (read_command(&pkt.hdr, pkt.cmd) != 0) {
 			debug_puts("read_command returned != 0!\n");
